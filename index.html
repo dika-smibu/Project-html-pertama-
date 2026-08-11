@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, World!</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+      <h1 class="title">Hello World!</h1>
+      <p id="currentTime"></p>
+      <script src="script.js"></script>
+  </body>
+</html>```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Ular MILIK DIKA JULIO</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        #score {
+            font-size: 20px;
+            margin: 10px;
+        }
+
+        canvas {
+            background: #111;
+            border: 4px solid #4CAF50;
+            max-width: 90vw;
+            max-height: 90vw;
+        }
+
+        .controls {
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: 70px 70px 70px;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        button {
+            width: 70px;
+            height: 55px;
+            font-size: 25px;
+            border: none;
+            border-radius: 10px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:active {
+            background: #388E3C;
+        }
+
+        .empty {
+            visibility: hidden;
+        }
+
+        #restart {
+            margin-top: 5px;
+            width: 150px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🐍 GAME ULAR MILIK JULIO  🐍</h1>
+
+    <div id="score">Skor: 0</div>
+
+    <canvas id="game" width="400" height="400"></canvas>
+
+    <div class="controls">
+        <button class="empty"></button>
+        <button onclick="changeDirection('up')">⬆️</button>
+        <button class="empty"></button>
+
+        <button onclick="changeDirection('left')">⬅️</button>
+        <button onclick="changeDirection('down')">⬇️</button>
+        <button onclick="changeDirection('right')">➡️</button>
+    </div>
+
+    <button id="restart" onclick="restartGame()">🔄 Mulai Lagi</button>
+
+    <script>
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        const scoreText = document.getElementById("score");
+
+        const ukuran = 20;
+        const jumlahKotak = canvas.width / ukuran;
+
+        let ular;
+        let makanan;
+        let arah;
+        let skor;
+        let gameOver;
+
+        function mulaiGame() {
+            ular = [
+                { x: 10, y: 10 }
+            ];
+
+            arah = {
+                x: 1,
+                y: 0
+            };
+
+            skor = 0;
+            gameOver = false;
+
+            buatMakanan();
+            scoreText.textContent = "Skor: " + skor;
+        }
+
+        function buatMakanan() {
+            makanan = {
+                x: Math.floor(Math.random() * jumlahKotak),
+                y: Math.floor(Math.random() * jumlahKotak)
+            };
+        }
+
+        function gambar() {
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Gambar makanan
+            ctx.fillStyle = "red";
+            ctx.beginPath();
+            ctx.arc(
+                makanan.x * ukuran + ukuran / 2,
+                makanan.y * ukuran + ukuran / 2,
+                ukuran / 2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+
+            // Gambar ular
+            ular.forEach((bagian, index) => {
+                ctx.fillStyle = index === 0 ? "#8BC34A" : "#4CAF50";
+
+                ctx.fillRect(
+                    bagian.x * ukuran + 1,
+                    bagian.y * ukuran + 1,
+                    ukuran - 2,
+                    ukuran - 2
+                );
+            });
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            const kepala = {
+                x: ular[0].x + arah.x,
+                y: ular[0].y + arah.y
+            };
+
+            // Tabrak dinding
+            if (
+                kepala.x < 0 ||
+                kepala.x >= jumlahKotak ||
+                kepala.y < 0 ||
+                kepala.y >= jumlahKotak
+            ) {
+                selesai();
+                return;
+            }
+
+            // Tabrak badan sendiri
+            for (let i = 0; i < ular.length; i++) {
+                if (
+                    kepala.x === ular[i].x &&
+                    kepala.y === ular[i].y
+                ) {
+                    selesai();
+                    return;
+                }
+            }
+
+            ular.unshift(kepala);
+
+            // Makan makanan
+            if (
+                kepala.x === makanan.x &&
+                kepala.y === makanan.y
+            ) {
+                skor++;
+                scoreText.textContent = "Skor: " + skor;
+                buatMakanan();
+            } else {
+                ular.pop();
+            }
+        }
+
+        function selesai() {
+            gameOver = true;
+
+            setTimeout(() => {
+                alert("Game Over! Skor kamu: " + skor);
+            }, 100);
+        }
+
+        function gameLoop() {
+            update();
+            gambar();
+        }
+
+        function changeDirection(arahBaru) {
+            if (arahBaru === "up" && arah.y === 0) {
+                arah = { x: 0, y: -1 };
+            }
+
+            if (arahBaru === "down" && arah.y === 0) {
+                arah = { x: 0, y: 1 };
+            }
+
+            if (arahBaru === "left" && arah.x === 0) {
+                arah = { x: -1, y: 0 };
+            }
+
+            if (arahBaru === "right" && arah.x === 0) {
+                arah = { x: 1, y: 0 };
+            }
+        }
+
+        // Kontrol keyboard
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "ArrowUp") {
+                changeDirection("up");
+            }
+
+            if (event.key === "ArrowDown") {
+                changeDirection("down");
+            }
+
+            if (event.key === "ArrowLeft") {
+                changeDirection("left");
+            }
+
+            if (event.key === "ArrowRight") {
+                changeDirection("right");
+            }
+        });
+
+        function restartGame() {
+            mulaiGame();
+        }
+
+        mulaiGame();
+
+        setInterval(gameLoop, 120);
+    </script>
+
+</body>
+</html>
+```
